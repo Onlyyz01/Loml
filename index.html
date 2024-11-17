@@ -18,7 +18,7 @@
             background: white;
             display: flex;
             flex-direction: column;
-            justify-content: center;
+            justify-content: space-between;
             align-items: center;
             touch-action: manipulation; /* Prevent dragging */
         }
@@ -31,7 +31,7 @@
             align-items: center;
             height: 100%;
             width: 100%;
-            max-width: 480px; /* Restrict width for better mobile compatibility */
+            max-width: 360px; /* Restricted to mobile screen size */
             box-sizing: border-box;
             text-align: center;
         }
@@ -39,41 +39,32 @@
         /* Header */
         header {
             flex-shrink: 0;
-            font-size: 2.5rem; /* Adjusted for mobile */
+            font-size: 2rem; /* Adjusted for mobile */
             color: crimson;
             padding: 10px;
             border-bottom: 2px solid brown;
             width: 100%;
+            text-align: center;
         }
 
         /* Footer */
         footer {
             flex-shrink: 0;
-            font-size: 1rem; /* Adjusted for mobile */
+            font-size: 0.9rem; /* Slightly smaller for mobile */
             color: brown;
-            padding: 20px;
+            padding: 10px;
             border-top: 2px solid brown;
             width: 100%;
+            text-align: center;
         }
 
-        /* Typing Text */
         .typing-text {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
+            display: inline-block;
             white-space: nowrap;
             overflow: hidden;
-            animation: typing 3s steps(40, end);
-        }
-
-        .fade-out {
-            animation: fadeOut 1s ease-in forwards;
-        }
-
-        .static-text {
-            animation: none;
-            border-right: none; /* Remove caret */
+            animation: typing 3s steps(40, end), blink 0.8s infinite step-start alternate;
+            border-right: 2px solid brown; /* Typing caret */
+            margin-bottom: 5px;
         }
 
         /* Typing Animation */
@@ -86,14 +77,13 @@
             }
         }
 
-        /* Fade Out Animation */
-        @keyframes fadeOut {
-            0% {
-                opacity: 1;
+        /* Blinking Caret */
+        @keyframes blink {
+            from {
+                border-color: brown;
             }
-            100% {
-                opacity: 0;
-                visibility: hidden;
+            to {
+                border-color: transparent;
             }
         }
 
@@ -110,8 +100,8 @@
         /* Central Heart Container */
         .central-heart-container {
             position: relative;
-            width: 100px; /* Adjusted for mobile */
-            height: 100px; /* Adjusted for mobile */
+            width: 120px; /* Adjusted for mobile */
+            height: 120px; /* Adjusted for mobile */
         }
 
         /* Back Heart (Pink Layer) */
@@ -212,11 +202,11 @@
                 opacity: 1;
             }
             50% {
-                transform: translate(5px, -50px) rotate(15deg);
+                transform: translate(10px, -50px) rotate(45deg);
                 opacity: 0.7;
             }
             100% {
-                transform: translate(-10px, -120px) rotate(-15deg);
+                transform: translate(-10px, -120px) rotate(-45deg);
                 opacity: 0;
             }
         }
@@ -239,57 +229,58 @@
 
         <!-- Footer -->
         <footer>
-            <div class="typing-text" id="text"></div>
+            <div id="text-line" class="typing-text"></div>
         </footer>
     </div>
 
     <script>
-        const textElement = document.getElementById('text');
-        const heartContainer = document.getElementById('heart');
-        const messages = [
-            "Hello there my loml. How are you? Hope you're doing great this night 😸",
-            "I just want to remind you that no one could take your place. No one can replace you, you're the only girl of my life.",
-            "I just want to let you know, that I love you more than you know, I love you that words can't even explain.",
-            "You weren't the FIRST girl I've loved, but you will be the FIRST girl I truly love <3",
+        const textLines = [
+            "Hello there my loml. <br> How are you? Hope you're doing great this night 😸",
+            "I just want to remind you <br> that no one could take your place.",
+            "No one can replace you, you're the only girl of my life.",
+            "I just want to let you know, that I love you more than you know.",
+            "I love you that words can't even explain.",
+            "You weren't the FIRST girl I've loved, <br> but you will be the FIRST girl I truly love <3.",
             "I love you soo muchh, miss you my pretty princess 😸😸"
         ];
 
         let currentIndex = 0;
 
-        function showTypingEffect(index) {
-            if (index >= messages.length) {
-                textElement.textContent = messages[messages.length - 1]; // Show last message
-                textElement.classList.add('static-text'); // Remove typing effect
-                return;
+        function showTypingEffect() {
+            const textLine = document.getElementById("text-line");
+            if (currentIndex < textLines.length) {
+                const line = textLines[currentIndex];
+                textLine.innerHTML = line;
+                textLine.style.animation = "none";
+
+                // Reset animation for typing
+                requestAnimationFrame(() => {
+                    textLine.style.animation = "";
+                });
+
+                currentIndex++;
+                if (currentIndex < textLines.length) {
+                    // Wait 3 seconds (5000ms) before fading out and moving to the next line
+                    setTimeout(() => {
+                        textLine.style.animation = "fadeOut 1s forwards"; // Smooth fade out
+                        setTimeout(showTypingEffect, 1000); // After fade-out, proceed to the next line
+                    }, 5000); // 3-second delay before fading out
+                }
             }
-
-            // Set current text
-            textElement.textContent = messages[index];
-            textElement.style.visibility = 'visible';
-
-            const typingDuration = messages[index].length * 75;
-
-            setTimeout(() => {
-                textElement.classList.add('fade-out'); // Add fade-out effect
-                setTimeout(() => {
-                    textElement.classList.remove('fade-out'); // Reset fade-out class
-                    textElement.style.visibility = 'hidden'; // Hide text
-                    showTypingEffect(index + 1); // Show next text
-                }, 1000);
-            }, typingDuration + 1000); // Wait for typing + pause duration
         }
 
         function createFloatingHeart() {
+            const heartContainer = document.querySelector(".central-heart-container");
             const heart = document.createElement('div');
             heart.className = 'small-heart';
 
             // Random position near the pink heart
             const angle = Math.random() * 360;
-            const radius = 50; // Adjusted for mobile
+            const radius = 50;
             const x = Math.cos((angle * Math.PI) / 180) * radius;
             const y = Math.sin((angle * Math.PI) / 180) * radius;
 
-            heart.style.left = `${50 + x}px`; // Adjusted for mobile
+            heart.style.left = `${50 + x}px`;
             heart.style.top = `${50 - y}px`;
 
             heartContainer.appendChild(heart);
@@ -298,7 +289,7 @@
         }
 
         setInterval(createFloatingHeart, 500); // Generate hearts every 500ms
-        showTypingEffect(currentIndex); // Start typing effect
+        showTypingEffect(); // Start typing effect
     </script>
 </body>
 </html>
